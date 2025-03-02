@@ -1,0 +1,7 @@
+{
+  "arrowParents": "avoid",
+  "semi": true,
+  "singleQuote": true,
+  "no-trailing-whitespace": true,
+  "printWidth": 120
+}

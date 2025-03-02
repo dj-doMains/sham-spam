@@ -1,0 +1,36 @@
+{
+  "name": "sham-spam",
+  "version": "1.0.0",
+  "description": "A Discord bot that posts messages on a schedule",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "npx nodemon --exec ts-node src/index.ts"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "scheduler",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@types/sqlite3": "^3.1.11",
+    "axios": "^1.8.1",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/node-cron": "^3.0.11",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}
