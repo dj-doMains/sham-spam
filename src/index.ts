@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Message, TextChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Message, TextChannel, ThreadChannel } from 'discord.js';
 import { CONFIG } from './config';
 import { SchedulerService } from './services/scheduler';
 import { DatabaseService } from './services/database';
@@ -44,21 +44,23 @@ client.on('messageCreate', async (message: Message) => {
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args?.join(' ')?.toLowerCase();
 
+  const isTextChannel = message.channel instanceof TextChannel || message.channel instanceof ThreadChannel;
+
   // Handle different commands
   if (command === 'ping') {
     // Simple ping command to check if the bot is responding
     await message.reply('Pong! 🏓');
   } else if (command === 'add') {
     // Add current channel to database
-    if (message.channel instanceof TextChannel) {
-      await databaseService.addChannel(message.channel);
+    if (isTextChannel) {
+      await databaseService.addChannel(message.channel as TextChannel);
       await message.reply(`Channel **${message.channel.name}** has been added to the list!`);
     } else {
       await message.reply('This command can only be used in a text channel.');
     }
   } else if (command === 'remove') {
     // Remove current channel from database
-    if (message.channel instanceof TextChannel) {
+    if (isTextChannel) {
       await databaseService.removeChannel(message.channel.id);
       await message.reply(`Channel **${message.channel.name}** has been removed from the list.`);
     } else {
