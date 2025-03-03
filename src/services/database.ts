@@ -90,6 +90,22 @@ export class DatabaseService {
   }
 
   /**
+   * Get all channels from the database for a guild
+   */
+  public async getAllChannelsByGuildId(guildId: string): Promise<any[]> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      return await this.db.all('SELECT * FROM channels WHERE guild_id = ? ORDER BY added_at DESC', guildId);
+    } catch (error) {
+      console.error('Failed to get channels from database:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Remove a channel from the database
    */
   public async removeChannel(channelId: string): Promise<void> {

@@ -68,7 +68,7 @@ client.on('messageCreate', async (message: Message) => {
     }
   } else if (command === 'list') {
     // List all channels in database
-    const channels = await databaseService.getAllChannels();
+    const channels = await databaseService.getAllChannelsByGuildId(message.guildId ?? '');
     if (channels.length === 0) {
       await message.reply('No channels have been added yet.');
     } else {
@@ -91,6 +91,7 @@ Available commands:
 - \`${prefix} add\` - Adds the channel to the list to spam
 - \`${prefix} remove\` - Removes the channel to the list to spam
 - \`${prefix} list\` - Shows all channels listed to spam
+- \`${prefix} fact\` - Find out something you don't know
 - \`${prefix} status\` - Check if the scheduler is currently running
 - \`${prefix} are you high?\` - Discover if the real Sham is currently high
 - \`${prefix} help\` - Show this help message
