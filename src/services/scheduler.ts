@@ -1,4 +1,4 @@
-import { Client, TextChannel } from 'discord.js';
+import { Client, TextChannel, ThreadChannel } from 'discord.js';
 import * as cron from 'node-cron';
 import { CONFIG } from '../config';
 import { DatabaseService } from './database';
@@ -74,8 +74,9 @@ export class SchedulerService {
       for (const channelData of channels) {
         try {
           const channel = await this.client.channels.fetch(channelData.id);
+          const isTextChannel = channel instanceof TextChannel || channel instanceof ThreadChannel;
 
-          if (channel && channel instanceof TextChannel) {
+          if (isTextChannel) {
             const message = await getFact();
             await channel.send(message);
             successCount++;
