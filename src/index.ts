@@ -42,7 +42,8 @@ client.on('messageCreate', async (message: Message) => {
 
   // Parse the command and arguments
   const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const command = args?.join(' ')?.toLowerCase();
+  const command = args[0]?.toLowerCase();
+  const commandArgs = args.slice(1);
 
   const isTextChannel = message.channel instanceof TextChannel || message.channel instanceof ThreadChannel;
 
@@ -79,10 +80,35 @@ client.on('messageCreate', async (message: Message) => {
     // Check scheduler status
     const status = schedulerService.isRunning() ? 'running' : 'stopped';
     await message.reply(`The scheduler is currently ${status}.`);
-  } else if (command === 'are you high?') {
+  } else if (args.join(' ').toLowerCase() === 'are you high?') {
     await message.reply('Yes');
   } else if (command === 'fact') {
     await message.reply(await getFact());
+  } else if (command === 'cleanup') {
+    // Clean up bot messages from current channel
+    if (isTextChannel) {
+      // Parse days argument, default to 7
+      const days = commandArgs.length > 0 ? parseInt(commandArgs[0], 10) : 7;
+
+      if (isNaN(days) || days <= 0) {
+        await message.reply('Please provide a valid number of days (e.g., `hey-sham cleanup 3`)');
+        return;
+      }
+
+      const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
+      const messages = await message.channel.messages.fetch({ limit: 100 });
+      const botMessages = messages.filter(
+        msg => msg.author.id === client.user?.id && msg.createdTimestamp > cutoffTime
+      );
+
+      for (const msg of botMessages.values()) {
+        await msg.delete();
+      }
+
+      await message.reply(`Cleaned up ${botMessages.size} message(s) from the past ${days} day(s).`);
+    } else {
+      await message.reply('This command can only be used in a text channel.');
+    }
   } else if (command === 'help') {
     // Help command
     const helpMessage = `
@@ -92,6 +118,7 @@ Available commands:
 - \`${prefix} remove\` - Removes the channel to the list to spam
 - \`${prefix} list\` - Shows all channels listed to spam
 - \`${prefix} fact\` - Find out something you don't know
+- \`${prefix} cleanup [days]\` - Delete all bot messages from the past X days in this channel (default: 7)
 - \`${prefix} status\` - Check if the scheduler is currently running
 - \`${prefix} are you high?\` - Discover if the real Sham is currently high
 - \`${prefix} help\` - Show this help message

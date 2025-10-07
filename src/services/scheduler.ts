@@ -52,6 +52,52 @@ export class SchedulerService {
   }
 
   /**
+   * Clean up old bot messages in a channel
+   */
+  private async cleanupChannelMessages(channel: TextChannel | ThreadChannel): Promise<number> {
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const messages = await channel.messages.fetch({ limit: 100 });
+    const botMessages = messages.filter(
+      msg => msg.author.id === this.client.user?.id && msg.createdTimestamp > oneWeekAgo
+    );
+
+    let deletedCount = 0;
+    for (const msg of botMessages.values()) {
+      await msg.delete();
+      deletedCount++;
+      console.log(`Deleted old message ${msg.id} from channel ${channel.id}`);
+    }
+
+    return deletedCount;
+  }
+
+  /**
+   * Clean up bot messages in all registered channels
+   */
+  public async cleanupAllChannels(): Promise<{ total: number; channels: number }> {
+    const channels = await this.database.getAllChannels();
+    let totalDeleted = 0;
+    let channelsProcessed = 0;
+
+    for (const channelData of channels) {
+      try {
+        const channel = await this.client.channels.fetch(channelData.id);
+        const isTextChannel = channel instanceof TextChannel || channel instanceof ThreadChannel;
+
+        if (isTextChannel) {
+          const deleted = await this.cleanupChannelMessages(channel);
+          totalDeleted += deleted;
+          channelsProcessed++;
+        }
+      } catch (error) {
+        console.error(`Error cleaning up channel ${channelData.id}:`, error);
+      }
+    }
+
+    return { total: totalDeleted, channels: channelsProcessed };
+  }
+
+  /**
    * Send the scheduled message to the configured channel
    */
   public async sendScheduledMessage(): Promise<void> {
@@ -77,6 +123,13 @@ export class SchedulerService {
           const isTextChannel = channel instanceof TextChannel || channel instanceof ThreadChannel;
 
           if (isTextChannel) {
+            // Clean up old bot messages from the past week
+            try {
+              await this.cleanupChannelMessages(channel);
+            } catch (cleanupError) {
+              console.error(`Error cleaning up messages in channel ${channelData.id}:`, cleanupError);
+            }
+
             const message = await getFact();
             await channel.send(message);
             successCount++;
